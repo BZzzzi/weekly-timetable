@@ -18,4 +18,22 @@ export const TIMES: string[] = [
   "16:30 - 17:00",
   "17:00 - 17:30",
 ];
-export const INTERVIEW_STATES = ["교수 확인 중", "확정", "재신청 필요", "면담 완료", "면담 불참"];
+export const INTERVIEW_STATES: string[] = [
+  "교수 확인 중",
+  "확정",
+  "재신청 필요",
+  "면담 완료",
+  "면담 불참",
+];
+export const SUBJECTS: string[] = [
+  "컴퓨팅사고(07)",
+  "컴퓨팅사고(08)",
+  "파이썬과학프로그래밍기초",
+  "데이터사이언스기초",
+  "C프로그래밍",
+  "IoT플랫폼설계",
+  "창의코딩R",
+  "인공지능기초(파이썬AI)",
+  "연구실회의",
+  "기타",
+];
