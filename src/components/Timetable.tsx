@@ -1,14 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { DAYS, TIMES } from "@/app/common/const";
-import { CellInfo } from "@/app/common/types";
+import { DAYS, TIMES } from "@/common/const";
+import { CellInfo } from "@/common/types";
 
 interface Props {
   schedule: CellInfo[] | [];
+  isAdmin: boolean;
 }
 
-const TimeTable: React.FC<Props> = ({ schedule }) => {
+const Timetable: React.FC<Props> = ({ schedule, isAdmin }) => {
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
   const [selectedCell, setSelectedCell] = useState<CellInfo | null>(null);
 
@@ -129,4 +130,4 @@ const TimeTable: React.FC<Props> = ({ schedule }) => {
   );
 };
 
-export default TimeTable;
+export default Timetable;
