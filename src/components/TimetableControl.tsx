@@ -33,7 +33,7 @@ const getWeekInfo = (date: dayjs.Dayjs) => {
   };
 };
 
-const TimetableControl = () => {
+const TimetableControl = ({ isAdmin }: { isAdmin: boolean }) => {
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [weekInfo, setWeekInfo] = useState(getWeekInfo(currentDate));
 
@@ -76,7 +76,7 @@ const TimetableControl = () => {
           ▶
         </button>
       </div>
-      <Timetable isAdmin={false} schedule={temp} />
+      <Timetable isAdmin={isAdmin} schedule={temp} />
     </div>
   );
 };
