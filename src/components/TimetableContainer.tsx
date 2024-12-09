@@ -42,6 +42,11 @@ const TimetableControl = ({ isAdmin }: { isAdmin: boolean }) => {
   const [weekInfo, setWeekInfo] = useState(getWeekInfo(currentDate));
   const [schedules, setSchedules] = useState<CellInfo[] | []>([]);
 
+  // 요일과 날짜를 매핑
+  const weekDates = Array.from({ length: 5 }, (_, index) =>
+    dayjs(weekInfo.startDate).add(index, "day").format("YYYY-MM-DD"),
+  );
+
   useEffect(() => {
     const fetchData = async () => {
       const response = await fetch(
@@ -94,7 +99,7 @@ const TimetableControl = ({ isAdmin }: { isAdmin: boolean }) => {
           ▶
         </button>
       </div>
-      <Timetable isAdmin={isAdmin} schedules={schedules} />
+      <Timetable isAdmin={isAdmin} schedules={schedules} weekDates={weekDates} />
     </div>
   );
 };

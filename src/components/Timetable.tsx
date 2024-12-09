@@ -3,25 +3,74 @@
 import React, { useState } from "react";
 import { DAYS, TIMES } from "@/common/const";
 import { CellInfo } from "@/common/types";
+import InterviewModal from "./InterviewModal";
+import ScheduleModal from "./ScheduleModal";
 
 interface Props {
-  schedule: CellInfo[] | [];
+  schedules: CellInfo[] | [];
   isAdmin: boolean;
+  weekDates: string[];
 }
 
-const Timetable: React.FC<Props> = ({ schedule, isAdmin }) => {
+const Timetable: React.FC<Props> = ({ schedules, isAdmin, weekDates }) => {
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
-  const [selectedCell, setSelectedCell] = useState<CellInfo | null>(null);
+  const [formData, setFormData] = useState<CellInfo | null>({
+    id: "",
+    day: "",
+    time: "",
+    name: "",
+    student_signature: 0,
+    email: "",
+    subject: "",
+    meeting_detail: "",
+    duration_10minutes_over: false,
+    date: "",
+    start_time: "",
+    end_time: "",
+    state: "",
+    delay_reason: "",
+  });
 
-  const openModal = (day: string, time: string, content?: string) => {
-    setSelectedCell({ day, time, content });
+  const openModal = ({ id, day, time }: { id: string; day: string; time: string }) => {
+    const schedule = schedules.find((item) => item.id === id) || null;
+    if (schedule) {
+      setFormData({
+        ...schedule,
+        day,
+        time,
+      });
+    } else {
+      const date = weekDates[DAYS.indexOf(day)];
+      setFormData({
+        ...schedule!,
+        day,
+        time,
+        date,
+        start_time: time.split(" - ")[0],
+        end_time: time.split(" - ")[1],
+      });
+    }
     setModalOpen(true);
   };
 
   const closeModal = () => {
     setModalOpen(false);
-    setSelectedCell(null);
+    setFormData(null);
   };
+
+  /**
+   * state를 넘기면 배경색을 리턴
+   * 색상 출처: tailwindcss 공식문서(https://tailwindcss.com/docs/background-color)
+   */
+  const stateColors: Record<string, string> = {
+    "교수 확인 중": "bg-amber-100",
+    확정: "bg-sky-200",
+    "재신청 필요": "bg-fuchsia-400",
+    "면담 완료": "bg-emerald-200",
+    "면담 불참": "bg-red-200",
+    "면담 불가": "bg-neutral-300",
+  };
+  const applyCellColor = (state: string) => stateColors[state] || "bg-white";
 
   return (
     <>
@@ -39,21 +88,35 @@ const Timetable: React.FC<Props> = ({ schedule, isAdmin }) => {
           <React.Fragment key={rowIndex}>
             {/* 시간 표시 */}
             <div className="bg-gray-100 p-2 text-center border border-gray-300">{time}</div>
-            {/* 빈 칸 */}
+            {/* 칸 */}
             {DAYS.map((day, colIndex) => {
-              const cellData = schedule.find((item) => item.day === day && item.time === time);
+              const cellData = schedules.find((item) => item.day === day && item.time === time);
+              const cellState = cellData ? (cellData.name ? cellData.state : "면담 불가") : "";
 
               return (
                 <div
                   key={`${rowIndex}-${colIndex}`}
-                  className={`p-2 border border-gray-300 cursor-pointer ${
-                    cellData ? "bg-blue-100 hover:bg-blue-200" : "hover:bg-gray-200"
-                  }`}
-                  onClick={() => openModal(day, time, cellData?.content)}
+                  className={`${applyCellColor(
+                    cellState,
+                  )} p-2 border border-gray-300 cursor-pointer hover:bg-neutral-100`}
+                  onClick={() => openModal({ id: cellData?.id || "", day, time })}
                 >
-                  {cellData?.content?.split("\n").map((line, idx) => (
-                    <div key={idx}>{line}</div>
-                  ))}
+                  {cellData ? (
+                    cellData.name ? (
+                      <div>
+                        <div>{cellData.name}</div>
+                        <div>{cellData.state}</div>
+                      </div>
+                    ) : (
+                      <div>
+                        교수일정
+                        <br />
+                        면담불가
+                      </div>
+                    )
+                  ) : (
+                    ""
+                  )}
                 </div>
               );
             })}
@@ -62,70 +125,20 @@ const Timetable: React.FC<Props> = ({ schedule, isAdmin }) => {
       </div>
 
       {/* 모달 */}
-      {isModalOpen && selectedCell && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-[85%] lg:w-1/2 p-6">
-            {/* 모달 헤더 */}
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">
-                면담 신청
-                <span className="block text-sm font-normal mt-1">
-                  {selectedCell.day} - {selectedCell.time}
-                </span>
-              </h2>
-              <button
-                onClick={closeModal}
-                className="text-gray-500 hover:text-black text-lg font-bold"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* 모달 바디 */}
-            <form className="space-y-4">
-              {/* 이름 */}
-              <div>
-                <label className="block text-sm font-bold mb-1">
-                  이름<span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  defaultValue={selectedCell.content?.split("\n")[0] || ""}
-                  className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="이름 입력"
-                />
-              </div>
-
-              {/* 면담 내용 */}
-              <div>
-                <label className="block text-sm font-bold mb-1">면담 내용</label>
-                <textarea
-                  className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows={3}
-                  defaultValue={selectedCell.content?.split("\n")[1] || ""}
-                  placeholder="내용 입력"
-                ></textarea>
-              </div>
-            </form>
-
-            {/* 모달 푸터 */}
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={closeModal}
-                className="px-4 py-2 bg-gray-500 text-white rounded mr-2"
-              >
-                취소
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                저장
-              </button>
-            </div>
-          </div>
-        </div>
+      {isModalOpen && (
+        <InterviewModal initData={formData} closeModal={closeModal} isAdmin={isAdmin} />
       )}
+      {/* {isModalOpen &&
+        // 조건수정필요
+        (formData?.name ? (
+          <InterviewModal
+            initData={formData}
+            closeModal={closeModal}
+            isAdmin={isAdmin}
+          />
+        ) : (
+          <ScheduleModal formData={formData} closeModal={closeModal} />
+        ))} */}
     </>
   );
 };
