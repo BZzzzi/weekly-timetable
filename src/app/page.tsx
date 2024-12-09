@@ -1,9 +1,9 @@
-import TimetableControl from "@/components/TimetableControl";
+import TimetableContainer from "@/components/TimetableContainer";
 
 export default function Home() {
   return (
     <>
-      <TimetableControl isAdmin={false} />
+      <TimetableContainer isAdmin={false} />
     </>
   );
 }

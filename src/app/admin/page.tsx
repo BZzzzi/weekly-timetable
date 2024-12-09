@@ -1,6 +1,6 @@
 "use client";
 
-import TimetableControl from "@/components/TimetableControl";
+import TimetableContainer from "@/components/TimetableContainer";
 import { useEffect, useState } from "react";
 
 export default function Admin() {
@@ -33,7 +33,7 @@ export default function Admin() {
   return (
     <>
       {isLoggedIn ? (
-        <TimetableControl isAdmin />
+        <TimetableContainer isAdmin />
       ) : (
         <div className="w-full flex justify-center items-center flex-col p-10">
           <h1 className="font-bold text-lg mb-4">관리자 인증</h1>
