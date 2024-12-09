@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
 
     // 두 데이터를 합치기
     const combinedData = [...(usersData || []), ...(adminData || [])];
-    return NextResponse.json({ success: true, data: combinedData }, { status: 200 });
+    return NextResponse.json(combinedData, { status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: "An unexpected error occurred" }, { status: 500 });
@@ -49,13 +49,13 @@ export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase.from("users").upsert(body).select();
+    const { error } = await supabase.from("users").upsert(body).select();
 
     if (error) {
       // 이메일
       return NextResponse.json({ message: error.message }, { status: 400 });
     } else {
-      return NextResponse.json({ message: "success", data }, { status: 200 });
+      return NextResponse.json({ message: "success" }, { status: 200 });
     }
   } catch (error) {
     console.error(error);
@@ -63,17 +63,17 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function PATCH(req: NextRequest) {
+export async function PUT(req: NextRequest) {
   const body = await req.json();
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase.from("users").update(body).eq("id", body.id).select();
+    const { error } = await supabase.from("users").update(body).eq("id", body.id).select();
 
     if (error) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     } else {
-      return NextResponse.json({ message: "success", data }, { status: 200 });
+      return NextResponse.json({ message: "success" }, { status: 200 });
     }
   } catch (error) {
     console.error(error);
@@ -86,12 +86,12 @@ export async function DELETE(req: NextRequest) {
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase.from("users").delete().eq("id", body.id);
+    const { error } = await supabase.from("users").delete().eq("id", body.id);
 
     if (error) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     } else {
-      return NextResponse.json({ message: "success", data }, { status: 200 });
+      return NextResponse.json({ message: "success" }, { status: 200 });
     }
   } catch (error) {
     console.error(error);
