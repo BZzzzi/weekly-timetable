@@ -5,7 +5,7 @@ export interface InterviewListRequest {
 
 export interface Interview {
   id: string;
-  name: number;
+  name: string;
   student_signature: number;
   email: string;
   subject: string;
@@ -19,6 +19,7 @@ export interface Interview {
 }
 export interface CellInfo extends Interview {
   day: string;
+  time: string;
 }
 export type InterviewResponse = Interview[];
 export type CreateInterviewRequest = Omit<Interview, "id" | "delay_reason">;
