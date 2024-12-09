@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import Timetable from "./Timetable";
+import { CellInfo } from "@/common/types";
+import { shortDayOfWeek } from "@/utils/utils";
 
 const getSemester = (date: dayjs.Dayjs): string => {
   const month = date.month() + 1;
@@ -30,17 +32,39 @@ const getWeekInfo = (date: dayjs.Dayjs) => {
     semester,
     weekStart: startOfWeek.format("MM.DD"),
     weekEnd: endOfWeek.format("MM.DD"),
+    startDate: startOfWeek.format("YYYY-MM-DD"),
+    endDate: endOfWeek.format("YYYY-MM-DD"),
   };
 };
 
 const TimetableControl = ({ isAdmin }: { isAdmin: boolean }) => {
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [weekInfo, setWeekInfo] = useState(getWeekInfo(currentDate));
+  const [schedules, setSchedules] = useState<CellInfo[] | []>([]);
 
-  // TODO: 주 변경에 따라 시간표 데이터 불러오기
   useEffect(() => {
-    console.log("currentDate", currentDate.format("YYYY-MM-DD"));
-  }, [currentDate]);
+    const fetchData = async () => {
+      const response = await fetch(
+        `/api/interview?${new URLSearchParams({
+          startDate: weekInfo.startDate,
+          endDate: weekInfo.endDate,
+        })}`,
+        {
+          method: "GET",
+        },
+      );
+      const data: CellInfo[] = await response.json();
+
+      // 화면 렌더링용으로 데이터 가공:
+      const newData = data.map((item) => ({
+        ...item,
+        time: `${item.start_time} - ${item.end_time}`,
+        day: shortDayOfWeek(item.date),
+      }));
+      setSchedules(newData);
+    };
+    fetchData();
+  }, [weekInfo]);
 
   const handlePrevWeek = () => {
     const prevWeekDate = currentDate.subtract(1, "week");
@@ -53,12 +77,6 @@ const TimetableControl = ({ isAdmin }: { isAdmin: boolean }) => {
     setCurrentDate(nextWeekDate);
     setWeekInfo(getWeekInfo(nextWeekDate));
   };
-
-  const temp = [
-    { day: "월", time: "09:30 - 10:00", content: "김현진\n[면담 완료]" },
-    { day: "화", time: "10:00 - 10:30", content: "감준영\n[진행 중]" },
-    { day: "목", time: "11:00 - 11:30", content: "이유진\n[확인 중]" },
-  ];
 
   return (
     <div className="text-sm lg:text-base p-4">
@@ -76,7 +94,7 @@ const TimetableControl = ({ isAdmin }: { isAdmin: boolean }) => {
           ▶
         </button>
       </div>
-      <Timetable isAdmin={isAdmin} schedule={temp} />
+      <Timetable isAdmin={isAdmin} schedules={schedules} />
     </div>
   );
 };
