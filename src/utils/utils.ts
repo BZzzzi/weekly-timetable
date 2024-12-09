@@ -1,4 +1,7 @@
 import dayjs from "dayjs";
+import "dayjs/locale/ko";
+
+dayjs.locale("ko");
 
 /**
  * 날짜를 넘기면 한국 기준 요일을 반환하는 함수
