@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { CellInfo } from "@/common/types";

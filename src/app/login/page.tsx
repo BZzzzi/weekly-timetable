@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import TimetableContainer from "@/components/TimetableContainer";
 import LocalStorage from "@/utils/localStorage";
 
 export default function Admin() {
