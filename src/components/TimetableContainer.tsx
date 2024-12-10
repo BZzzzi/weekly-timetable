@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import Timetable from "./Timetable";
 import { CellInfo } from "@/common/types";
 import { shortDayOfWeek } from "@/utils/utils";
 
+// 파라미터로 보낸 달에 따라 학기 텍스트를 반환함
 const getSemester = (date: dayjs.Dayjs): string => {
   const month = date.month() + 1;
   const day = date.date();
@@ -22,6 +23,7 @@ const getSemester = (date: dayjs.Dayjs): string => {
   return "";
 };
 
+// 현재 날짜 기준으로 필요한 날짜 데이터들을 가공하여 리턴함
 const getWeekInfo = (date: dayjs.Dayjs) => {
   const startOfWeek = date.startOf("week").add(1, "day");
   const endOfWeek = startOfWeek.add(4, "days");
@@ -30,57 +32,64 @@ const getWeekInfo = (date: dayjs.Dayjs) => {
   return {
     year: date.year(),
     semester,
-    weekStart: startOfWeek.format("MM.DD"),
+    weekStart: startOfWeek.format("MM.DD"), // 시간표 상단 표시
     weekEnd: endOfWeek.format("MM.DD"),
-    startDate: startOfWeek.format("YYYY-MM-DD"),
+    startDate: startOfWeek.format("YYYY-MM-DD"), // api 저장용
     endDate: endOfWeek.format("YYYY-MM-DD"),
   };
 };
 
 const TimetableControl = ({ isAdmin }: { isAdmin: boolean }) => {
   const [currentDate, setCurrentDate] = useState(dayjs());
-  const [weekInfo, setWeekInfo] = useState(getWeekInfo(currentDate));
-  const [schedules, setSchedules] = useState<CellInfo[] | []>([]);
+  const [schedules, setSchedules] = useState<CellInfo[]>([]);
 
-  // 요일과 날짜를 매핑
-  const weekDates = Array.from({ length: 5 }, (_, index) =>
-    dayjs(weekInfo.startDate).add(index, "day").format("YYYY-MM-DD"),
+  // currentDate가 변경될 때마다 계산하여 할당
+  const weekInfo = useMemo(() => getWeekInfo(currentDate), [currentDate]);
+
+  // weekInfo.startDate가 변경될 때마다 날짜 배열 계산하여 할당
+  const weekDates = useMemo(
+    () =>
+      Array.from({ length: 5 }, (_, index) =>
+        dayjs(weekInfo.startDate).add(index, "day").format("YYYY-MM-DD"),
+      ),
+    [weekInfo.startDate],
   );
 
+  // 데이터 fetch
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch(
-        `/api/interview?${new URLSearchParams({
-          startDate: weekInfo.startDate,
-          endDate: weekInfo.endDate,
-        })}`,
-        {
-          method: "GET",
-        },
-      );
-      const data: CellInfo[] = await response.json();
+      try {
+        const response = await fetch(
+          `/api/interview?${new URLSearchParams({
+            startDate: weekInfo.startDate,
+            endDate: weekInfo.endDate,
+          })}`,
+          {
+            method: "GET",
+          },
+        );
+        const data: CellInfo[] = await response.json();
 
-      // 화면 렌더링용으로 데이터 가공:
-      const newData = data.map((item) => ({
-        ...item,
-        time: `${item.start_time} - ${item.end_time}`,
-        day: shortDayOfWeek(item.date),
-      }));
-      setSchedules(newData);
+        // 데이터 가공
+        const newData = data.map((item) => ({
+          ...item,
+          time: `${item.start_time} - ${item.end_time}`,
+          day: shortDayOfWeek(item.date),
+        }));
+        setSchedules(newData);
+      } catch (error) {
+        console.error("Failed to fetch schedules:", error);
+      }
     };
     fetchData();
-  }, [weekInfo]);
+  }, [weekInfo.startDate, weekInfo.endDate]);
 
   const handlePrevWeek = () => {
-    const prevWeekDate = currentDate.subtract(1, "week");
-    setCurrentDate(prevWeekDate);
-    setWeekInfo(getWeekInfo(prevWeekDate));
+    setCurrentDate((prev) => prev.subtract(1, "week"));
   };
 
   const handleNextWeek = () => {
-    const nextWeekDate = currentDate.add(1, "week");
-    setCurrentDate(nextWeekDate);
-    setWeekInfo(getWeekInfo(nextWeekDate));
+    setCurrentDate((prev) => prev.add(1, "week"));
   };
 
   return (
