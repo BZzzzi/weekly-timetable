@@ -40,13 +40,13 @@ const getWeekInfo = (date: dayjs.Dayjs) => {
   };
 };
 
-const TimetableControl = ({ isAdminPage }: { isAdminPage: boolean }) => {
+const TimetableControl = () => {
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [schedules, setSchedules] = useState<CellInfo[]>([]);
 
-  const isLoggedIn = localStorage.getItem("isLoggedIn");
+  const isProfessor = localStorage.getItem("isLoggedIn"); // 교수님 권한 여부
 
-  // currentDate가 변경될 때마다 계산하여 할당
+  // currentDate가 변경될 때(화살표로 지난주/다음주 클릭)마다 계산하여 할당
   const weekInfo = useMemo(() => getWeekInfo(currentDate), [currentDate]);
 
   // weekInfo.startDate가 변경될 때마다 날짜 배열 계산하여 할당
@@ -58,7 +58,6 @@ const TimetableControl = ({ isAdminPage }: { isAdminPage: boolean }) => {
     [weekInfo.startDate],
   );
 
-  // 데이터 fetch
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -111,7 +110,7 @@ const TimetableControl = ({ isAdminPage }: { isAdminPage: boolean }) => {
           ▶
         </button>
       </div>
-      {isLoggedIn &&
+      {isProfessor &&
         (window.location.pathname === "/admin" ? (
           <Link className="flex justify-end underline" href="/">
             메인 페이지로 이동하기
@@ -122,7 +121,7 @@ const TimetableControl = ({ isAdminPage }: { isAdminPage: boolean }) => {
           </Link>
         ))}
 
-      <Timetable isAdminPage={isAdminPage} schedules={schedules} weekDates={weekDates} />
+      <Timetable schedules={schedules} weekDates={weekDates} />
     </div>
   );
 };

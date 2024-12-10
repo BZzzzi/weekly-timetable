@@ -8,11 +8,12 @@ import ProfessorScheduleModal from "./ProfessorScheduleModal";
 
 interface Props {
   schedules: CellInfo[] | [];
-  isAdminPage: boolean;
   weekDates: string[];
 }
 
-const Timetable: React.FC<Props> = ({ schedules, isAdminPage, weekDates }) => {
+const Timetable: React.FC<Props> = ({ schedules, weekDates }) => {
+  const isProfessor = localStorage.getItem("isLoggedIn");
+
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
   const [formData, setFormData] = useState<CellInfo | null>({
     id: "",
@@ -32,7 +33,7 @@ const Timetable: React.FC<Props> = ({ schedules, isAdminPage, weekDates }) => {
   });
 
   const openModal = ({ id, day, time }: { id: string; day: string; time: string }) => {
-    // 등록된 스케줄이 있는 칸인지 아닌지 체크
+    // 기등록된 스케줄이 있는 칸인지 아닌지 체크
     const schedule = schedules.find((item) => item.id === id) || null;
     if (schedule) {
       setFormData({
@@ -41,7 +42,7 @@ const Timetable: React.FC<Props> = ({ schedules, isAdminPage, weekDates }) => {
         time,
       });
     } else {
-      // 빈 칸이면, 필요한 값 세팅
+      // 빈 칸이면, 아직 date 등이 없기 때문에 필요한 값 세팅한 다음에 모달 열기
       const date = weekDates[DAYS.indexOf(day)];
       setFormData({
         ...schedule!,
@@ -76,7 +77,7 @@ const Timetable: React.FC<Props> = ({ schedules, isAdminPage, weekDates }) => {
 
   return (
     <>
-      <div className="grid grid-cols-6 border border-gray-300">
+      <div className="grid grid-cols-6 border border-gray-300 mt-3">
         {/* 요일 헤더 */}
         <div className="bg-gray-100 p-2 font-bold text-center border border-gray-300">교시</div>
         {DAYS.map((day, index) => (
@@ -98,9 +99,9 @@ const Timetable: React.FC<Props> = ({ schedules, isAdminPage, weekDates }) => {
               return (
                 <div
                   key={`${rowIndex}-${colIndex}`}
-                  className={`${applyCellColor(
-                    cellState,
-                  )} p-2 border border-gray-300 cursor-pointer hover:opacity-70`}
+                  className={`${applyCellColor(cellState)} p-2 border border-gray-300  ${
+                    !isProfessor && !cellData?.name ? "" : "cursor-pointer hover:opacity-70"
+                  }`}
                   onClick={() => openModal({ id: cellData?.id || "", day, time })}
                 >
                   {cellData ? (
@@ -126,15 +127,13 @@ const Timetable: React.FC<Props> = ({ schedules, isAdminPage, weekDates }) => {
         ))}
       </div>
 
+      {/* 등록자가 있다(면담칸) -> 면담 폼 모달 오픈 */}
+      {/* 등록자가 없다(교수일정칸) -> 교수권한이면 스케줄모달, 아니라면 아무 모달도 띄우지 않음*/}
       {isModalOpen &&
-        (isAdminPage ? (
-          formData?.name ? (
-            <InterviewModal initData={formData} closeModal={closeModal} isAdminPage={isAdminPage} />
-          ) : (
-            <ProfessorScheduleModal initData={formData} closeModal={closeModal} />
-          )
-        ) : formData?.name ? (
-          <InterviewModal initData={formData} closeModal={closeModal} isAdminPage={isAdminPage} />
+        (formData?.name ? (
+          <InterviewModal initData={formData} closeModal={closeModal} />
+        ) : isProfessor ? (
+          <ProfessorScheduleModal initData={formData} closeModal={closeModal} />
         ) : null)}
     </>
   );
