@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { DAYS, TIMES } from "@/common/const";
 import { CellInfo } from "@/common/types";
 import InterviewModal from "./InterviewModal";
-import ScheduleModal from "./ScheduleModal";
+import ProfessorScheduleModal from "./ProfessorScheduleModal";
 
 interface Props {
   schedules: CellInfo[] | [];
@@ -131,7 +131,7 @@ const Timetable: React.FC<Props> = ({ schedules, isAdminPage, weekDates }) => {
           formData?.name ? (
             <InterviewModal initData={formData} closeModal={closeModal} isAdminPage={isAdminPage} />
           ) : (
-            <ScheduleModal initData={formData} closeModal={closeModal} />
+            <ProfessorScheduleModal initData={formData} closeModal={closeModal} />
           )
         ) : formData?.name ? (
           <InterviewModal initData={formData} closeModal={closeModal} isAdminPage={isAdminPage} />
