@@ -7,13 +7,13 @@ import { useState } from "react";
 interface Props {
   initData: CellInfo | null;
   closeModal: () => void;
-  isAdmin: boolean;
+  isAdminPage: boolean;
 }
 
 /**
  * 학생용 입력 모달
  */
-const InterviewModal = ({ initData, closeModal, isAdmin }: Props) => {
+const InterviewModal = ({ initData, closeModal, isAdminPage }: Props) => {
   const [formData, setFormData] = useState(initData);
 
   const handleChange = (
@@ -35,33 +35,87 @@ const InterviewModal = ({ initData, closeModal, isAdmin }: Props) => {
   };
 
   const saveData = async () => {
-    // TODO: 필수값 처리
     if (!formData) return;
 
-    // TODO: POST/PUT 로직 정리 필요
-    const isNew = !formData.id; // ID가 없으면 POST로 새로 생성
-    const method = isNew ? "POST" : "PUT"; // 전체 데이터 전송은 PUT 사용
+    // 필수값 확인
+    const requiredFields = ["name", "student_signature", "email", "subject", "meeting_detail"];
+    const missingFields = requiredFields.filter((field) => !formData[field as keyof CellInfo]);
+    if (missingFields.length > 0) {
+      alert("필수 입력값을 모두 입력해주세요");
+      return;
+    }
 
-    const { day, time, ...postBody } = formData!;
-    postBody.state = "교수 확인 중";
+    try {
+      const isNew = !formData.id; // id가 없으면 새 면담 등록 = POST
+      const method = isNew ? "POST" : "PUT";
 
-    const { id, ...putBody } = postBody!;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, day, time, ...bodyData } = formData;
+      const body = isAdminPage
+        ? bodyData
+        : {
+            ...bodyData,
+            state: "교수 확인 중", // 업데이트할 때마다 이 상태로 설정
+          };
 
-    const body = !isNew ? postBody : putBody;
+      const response = await fetch("/api/interview", {
+        method,
+        body: JSON.stringify(isNew ? body : { ...body, id }),
+      });
 
-    await fetch("/api/interview", {
-      method,
-      body: JSON.stringify(body),
-    });
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Error:", error);
+        alert(`저장 중 문제가 발생했습니다: ${error.message || "알 수 없는 에러"}`);
+        return;
+      }
 
-    closeModal();
-    // TODO: 새로고침 필요
+      // 성공 처리
+      alert(
+        isNew
+          ? "새 면담이 성공적으로 저장되었습니다."
+          : "면담 정보가 성공적으로 업데이트되었습니다.",
+      );
+      closeModal(); // 모달 닫기
+    } catch (error) {
+      console.error("Save error:", error);
+      alert("저장 중 문제가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+      window.location.reload();
+    }
+  };
+
+  const deleteData = async () => {
+    if (!formData) return;
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+
+    try {
+      const response = await fetch("/api/interview", {
+        method: "DELETE",
+        body: JSON.stringify({ id: formData.id }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Error:", error);
+        alert(`삭제 중 문제가 발생했습니다: ${error.message || "알 수 없는 에러"}`);
+        return;
+      }
+
+      // 성공 처리
+      alert("삭제되었습니다");
+      closeModal();
+    } catch (error) {
+      console.error("Save error:", error);
+      alert("삭제 중 문제가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+      window.location.reload();
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg shadow-lg w-[85%] lg:w-1/2 p-6">
-        {/* 모달 헤더 */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="flex items-center text-xl font-bold">
             면담 신청
@@ -74,7 +128,6 @@ const InterviewModal = ({ initData, closeModal, isAdmin }: Props) => {
           </button>
         </div>
 
-        {/* 모달 바디 */}
         <form className="space-y-4">
           {/* 이름 */}
           <div>
@@ -185,7 +238,7 @@ const InterviewModal = ({ initData, closeModal, isAdmin }: Props) => {
               className="w-full border-2 py-2 px-1 rounded-sm disabled:bg-gray-200 disabled:cursor-not-allowed"
               value={formData?.state}
               onChange={handleChange}
-              disabled={!isAdmin}
+              disabled={!isAdminPage}
             >
               {INTERVIEW_STATES.map((state) => (
                 <option key={state} value={state}>
@@ -193,10 +246,12 @@ const InterviewModal = ({ initData, closeModal, isAdmin }: Props) => {
                 </option>
               ))}
             </select>
-            <span>수정 저장 시, 자동으로 "교수 확인 중"으로 변경</span>
+            <span>수정 저장 시, 자동으로 "교수 확인 중" 상태로 변경됩니다.</span>
           </div>
 
-          {isAdmin && (
+          {/* 교수가 입력한 면담 사유가 있을 경우에만 표시 */}
+          {/* 학생 페이지에선 수정 불가 */}
+          {initData?.delay_reason && (
             <div>
               <label htmlFor="delay_reason" className="block text-sm font-bold mb-1">
                 면담 불가 사유<span className="text-red-500">*</span>
@@ -205,6 +260,7 @@ const InterviewModal = ({ initData, closeModal, isAdmin }: Props) => {
                 type="text"
                 id="delay_reason"
                 name="delay_reason"
+                disabled={!isAdminPage}
                 value={formData?.delay_reason ?? ""}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -214,18 +270,26 @@ const InterviewModal = ({ initData, closeModal, isAdmin }: Props) => {
           )}
         </form>
 
-        {/* 모달 푸터 */}
-        <div className="flex justify-end mt-4">
-          <button onClick={closeModal} className="px-4 py-2 bg-gray-500 text-white rounded mr-2">
-            취소
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            onClick={saveData}
-          >
-            저장
-          </button>
+        <div className="flex justify-between mt-4">
+          {initData?.id ? (
+            <button onClick={deleteData} className="px-4 py-2 bg-red-500 text-white rounded mr-2">
+              삭제
+            </button>
+          ) : (
+            <div></div>
+          )}
+          <div>
+            <button onClick={closeModal} className="px-4 py-2 bg-gray-500 text-white rounded mr-2">
+              취소
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              onClick={saveData}
+            >
+              저장
+            </button>
+          </div>
         </div>
       </div>
     </div>

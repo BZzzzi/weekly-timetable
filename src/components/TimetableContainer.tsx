@@ -1,10 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
-import Timetable from "./Timetable";
 import { CellInfo } from "@/common/types";
 import { shortDayOfWeek } from "@/utils/utils";
+import Timetable from "./Timetable";
 
 // 파라미터로 보낸 달에 따라 학기 텍스트를 반환함
 const getSemester = (date: dayjs.Dayjs): string => {
@@ -39,9 +40,11 @@ const getWeekInfo = (date: dayjs.Dayjs) => {
   };
 };
 
-const TimetableControl = ({ isAdmin }: { isAdmin: boolean }) => {
+const TimetableControl = ({ isAdminPage }: { isAdminPage: boolean }) => {
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [schedules, setSchedules] = useState<CellInfo[]>([]);
+
+  const isLoggedIn = localStorage.getItem("isLoggedIn");
 
   // currentDate가 변경될 때마다 계산하여 할당
   const weekInfo = useMemo(() => getWeekInfo(currentDate), [currentDate]);
@@ -95,7 +98,7 @@ const TimetableControl = ({ isAdmin }: { isAdmin: boolean }) => {
   return (
     <div className="text-sm lg:text-base p-4">
       {/* TODO: 안내 문구 */}
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center">
         <button className="px-4 py-2 bg-gray-300 rounded" onClick={handlePrevWeek}>
           ◀
         </button>
@@ -108,7 +111,18 @@ const TimetableControl = ({ isAdmin }: { isAdmin: boolean }) => {
           ▶
         </button>
       </div>
-      <Timetable isAdmin={isAdmin} schedules={schedules} weekDates={weekDates} />
+      {isLoggedIn &&
+        (window.location.pathname === "/admin" ? (
+          <Link className="flex justify-end underline" href="/">
+            메인 페이지로 이동하기
+          </Link>
+        ) : (
+          <Link className="flex justify-end underline" href="/admin">
+            어드민 페이지로 이동하기
+          </Link>
+        ))}
+
+      <Timetable isAdminPage={isAdminPage} schedules={schedules} weekDates={weekDates} />
     </div>
   );
 };

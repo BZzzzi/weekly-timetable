@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { DAYS, TIMES } from "@/common/const";
 import { CellInfo } from "@/common/types";
 import InterviewModal from "./InterviewModal";
@@ -8,11 +8,11 @@ import ScheduleModal from "./ScheduleModal";
 
 interface Props {
   schedules: CellInfo[] | [];
-  isAdmin: boolean;
+  isAdminPage: boolean;
   weekDates: string[];
 }
 
-const Timetable: React.FC<Props> = ({ schedules, isAdmin, weekDates }) => {
+const Timetable: React.FC<Props> = ({ schedules, isAdminPage, weekDates }) => {
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
   const [formData, setFormData] = useState<CellInfo | null>({
     id: "",
@@ -32,6 +32,7 @@ const Timetable: React.FC<Props> = ({ schedules, isAdmin, weekDates }) => {
   });
 
   const openModal = ({ id, day, time }: { id: string; day: string; time: string }) => {
+    // 등록된 스케줄이 있는 칸인지 아닌지 체크
     const schedule = schedules.find((item) => item.id === id) || null;
     if (schedule) {
       setFormData({
@@ -40,6 +41,7 @@ const Timetable: React.FC<Props> = ({ schedules, isAdmin, weekDates }) => {
         time,
       });
     } else {
+      // 빈 칸이면, 필요한 값 세팅
       const date = weekDates[DAYS.indexOf(day)];
       setFormData({
         ...schedule!,
@@ -98,7 +100,7 @@ const Timetable: React.FC<Props> = ({ schedules, isAdmin, weekDates }) => {
                   key={`${rowIndex}-${colIndex}`}
                   className={`${applyCellColor(
                     cellState,
-                  )} p-2 border border-gray-300 cursor-pointer hover:bg-neutral-100`}
+                  )} p-2 border border-gray-300 cursor-pointer hover:opacity-70`}
                   onClick={() => openModal({ id: cellData?.id || "", day, time })}
                 >
                   {cellData ? (
@@ -124,21 +126,16 @@ const Timetable: React.FC<Props> = ({ schedules, isAdmin, weekDates }) => {
         ))}
       </div>
 
-      {/* 모달 */}
-      {isModalOpen && (
-        <InterviewModal initData={formData} closeModal={closeModal} isAdmin={isAdmin} />
-      )}
-      {/* {isModalOpen &&
-        // 조건수정필요
-        (formData?.name ? (
-          <InterviewModal
-            initData={formData}
-            closeModal={closeModal}
-            isAdmin={isAdmin}
-          />
-        ) : (
-          <ScheduleModal formData={formData} closeModal={closeModal} />
-        ))} */}
+      {isModalOpen &&
+        (isAdminPage ? (
+          formData?.name ? (
+            <InterviewModal initData={formData} closeModal={closeModal} isAdminPage={isAdminPage} />
+          ) : (
+            <ScheduleModal initData={formData} closeModal={closeModal} />
+          )
+        ) : formData?.name ? (
+          <InterviewModal initData={formData} closeModal={closeModal} isAdminPage={isAdminPage} />
+        ) : null)}
     </>
   );
 };

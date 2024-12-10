@@ -33,7 +33,7 @@ export default function Admin() {
   return (
     <>
       {isLoggedIn ? (
-        <TimetableContainer isAdmin />
+        <TimetableContainer isAdminPage={true} />
       ) : (
         <div className="w-full flex justify-center items-center flex-col p-10">
           <h1 className="font-bold text-lg mb-4">관리자 인증</h1>
