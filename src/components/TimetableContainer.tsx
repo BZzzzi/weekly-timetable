@@ -43,6 +43,7 @@ const getWeekInfo = (date: dayjs.Dayjs) => {
 const TimetableControl = () => {
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [schedules, setSchedules] = useState<CellInfo[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isProfessor = LocalStorage.getItem("isLoggedIn"); // 교수님 권한 여부
 
@@ -61,6 +62,7 @@ const TimetableControl = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setIsLoading(true);
         const response = await fetch(
           `/api/interview?${new URLSearchParams({
             startDate: weekInfo.startDate,
@@ -81,6 +83,8 @@ const TimetableControl = () => {
         setSchedules(newData);
       } catch (error) {
         console.error("Failed to fetch schedules:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
@@ -95,25 +99,33 @@ const TimetableControl = () => {
   };
 
   return (
-    <div className="text-sm lg:text-base p-4">
-      {/* TODO: 안내 문구 */}
-      <div className="flex justify-between items-center">
-        <button className="px-4 py-2 bg-gray-300 rounded" onClick={handlePrevWeek}>
-          ◀
-        </button>
-        <h1 className="text-xl font-bold text-center">
-          {weekInfo.year}년 {weekInfo.semester}
-          <br />
-          {weekInfo.weekStart}(월) ~ {weekInfo.weekEnd}(금)
-        </h1>
-        <button className="px-4 py-2 bg-gray-300 rounded" onClick={handleNextWeek}>
-          ▶
-        </button>
-      </div>
-      {isProfessor && <span className="flex justify-end">로그인 상태입니다</span>}
+    <>
+      {isLoading && (
+        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black bg-opacity-30 z-50">
+          <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
+        </div>
+      )}
 
-      <Timetable schedules={schedules} weekDates={weekDates} />
-    </div>
+      <div className="text-sm lg:text-base p-4">
+        {/* TODO: 안내 문구 */}
+        <div className="flex justify-between items-center">
+          <button className="px-4 py-2 bg-gray-300 rounded" onClick={handlePrevWeek}>
+            ◀
+          </button>
+          <h1 className="text-xl font-bold text-center">
+            {weekInfo.year}년 {weekInfo.semester}
+            <br />
+            {weekInfo.weekStart}(월) ~ {weekInfo.weekEnd}(금)
+          </h1>
+          <button className="px-4 py-2 bg-gray-300 rounded" onClick={handleNextWeek}>
+            ▶
+          </button>
+        </div>
+        {isProfessor && <span className="flex justify-end">로그인 상태입니다</span>}
+
+        <Timetable schedules={schedules} weekDates={weekDates} />
+      </div>
+    </>
   );
 };
 
