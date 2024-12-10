@@ -1,8 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { INTERVIEW_STATES, SUBJECTS } from "@/common/const";
 import { CellInfo } from "@/common/types";
-import { useState } from "react";
+import LocalStorage from "@/utils/localStorage";
 
 interface Props {
   initData: CellInfo | null;
@@ -13,7 +14,7 @@ interface Props {
  * 학생용 입력 모달
  */
 const InterviewModal = ({ initData, closeModal }: Props) => {
-  const isProfessor = localStorage.getItem("isLoggedIn");
+  const isProfessor = LocalStorage.getItem("isLoggedIn");
 
   const [formData, setFormData] = useState(initData);
 

@@ -5,6 +5,7 @@ import { DAYS, TIMES } from "@/common/const";
 import { CellInfo } from "@/common/types";
 import InterviewModal from "./InterviewModal";
 import ProfessorScheduleModal from "./ProfessorScheduleModal";
+import LocalStorage from "@/utils/localStorage";
 
 interface Props {
   schedules: CellInfo[] | [];
@@ -12,7 +13,7 @@ interface Props {
 }
 
 const Timetable: React.FC<Props> = ({ schedules, weekDates }) => {
-  const isProfessor = localStorage.getItem("isLoggedIn");
+  const isProfessor = LocalStorage.getItem("isLoggedIn");
 
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
   const [formData, setFormData] = useState<CellInfo | null>({

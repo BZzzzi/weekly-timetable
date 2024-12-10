@@ -1,7 +1,8 @@
 "use client";
 
-import TimetableContainer from "@/components/TimetableContainer";
 import { useEffect, useState } from "react";
+import TimetableContainer from "@/components/TimetableContainer";
+import LocalStorage from "@/utils/localStorage";
 
 export default function Admin() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -9,7 +10,7 @@ export default function Admin() {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    const auth = localStorage.getItem("isLoggedIn") === "true";
+    const auth = LocalStorage.getItem("isLoggedIn") === "true";
     setIsLoggedIn(auth);
     setIsLoading(false);
   }, []);
@@ -17,7 +18,7 @@ export default function Admin() {
   const handleLogin = () => {
     const adminPassword = "1234"; // 관리자 비밀번호
     if (password === adminPassword) {
-      localStorage.setItem("isLoggedIn", "true");
+      LocalStorage.setItem("isLoggedIn", "true");
       setIsLoggedIn(true);
     } else {
       alert("비밀번호가 일치하지 않습니다. 다시 시도해주세요.");

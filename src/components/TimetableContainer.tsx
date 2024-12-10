@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { CellInfo } from "@/common/types";
 import { shortDayOfWeek } from "@/utils/utils";
 import Timetable from "./Timetable";
+import LocalStorage from "@/utils/localStorage";
 
 // 파라미터로 보낸 달에 따라 학기 텍스트를 반환함
 const getSemester = (date: dayjs.Dayjs): string => {
@@ -44,7 +45,7 @@ const TimetableControl = () => {
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [schedules, setSchedules] = useState<CellInfo[]>([]);
 
-  const isProfessor = localStorage.getItem("isLoggedIn"); // 교수님 권한 여부
+  const isProfessor = LocalStorage.getItem("isLoggedIn"); // 교수님 권한 여부
 
   // currentDate가 변경될 때(화살표로 지난주/다음주 클릭)마다 계산하여 할당
   const weekInfo = useMemo(() => getWeekInfo(currentDate), [currentDate]);
