@@ -111,16 +111,7 @@ const TimetableControl = () => {
           ▶
         </button>
       </div>
-      {isProfessor &&
-        (window.location.pathname === "/admin" ? (
-          <Link className="flex justify-end underline" href="/">
-            메인 페이지로 이동하기
-          </Link>
-        ) : (
-          <Link className="flex justify-end underline" href="/admin">
-            어드민 페이지로 이동하기
-          </Link>
-        ))}
+      {isProfessor && <span className="flex justify-end">로그인 상태입니다</span>}
 
       <Timetable schedules={schedules} weekDates={weekDates} />
     </div>

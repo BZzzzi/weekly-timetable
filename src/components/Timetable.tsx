@@ -76,6 +76,32 @@ const Timetable: React.FC<Props> = ({ schedules, weekDates }) => {
   };
   const applyCellColor = (state: string) => stateColors[state] || "bg-white";
 
+  const renderModal = () => {
+    const isInterviewCell = !!formData?.name; // 면담 등록된 칸
+    const isProfessorScheduleCell = !!formData?.id && !formData?.name; // 교수 일정 칸
+    const isEmptyCell = !formData?.id && !formData?.name; // 빈칸
+
+    if (isInterviewCell) {
+      return <InterviewModal initData={formData} closeModal={closeModal} />;
+    }
+
+    if (isProfessorScheduleCell) {
+      return isProfessor ? (
+        <ProfessorScheduleModal initData={formData} closeModal={closeModal} />
+      ) : null;
+    }
+
+    if (isEmptyCell) {
+      return isProfessor ? (
+        <ProfessorScheduleModal initData={formData} closeModal={closeModal} />
+      ) : (
+        <InterviewModal initData={formData} closeModal={closeModal} />
+      );
+    }
+
+    return null;
+  };
+
   return (
     <>
       <div className="grid grid-cols-6 border border-gray-300 mt-3">
@@ -100,8 +126,10 @@ const Timetable: React.FC<Props> = ({ schedules, weekDates }) => {
               return (
                 <div
                   key={`${rowIndex}-${colIndex}`}
-                  className={`${applyCellColor(cellState)} p-2 border border-gray-300  ${
-                    !isProfessor && !cellData?.name ? "" : "cursor-pointer hover:opacity-70"
+                  className={`${applyCellColor(cellState)} p-2 border border-gray-300 ${
+                    !isProfessor && cellData?.id && !cellData?.name
+                      ? ""
+                      : "cursor-pointer hover:opacity-70"
                   }`}
                   onClick={() => openModal({ id: cellData?.id || "", day, time })}
                 >
@@ -128,14 +156,7 @@ const Timetable: React.FC<Props> = ({ schedules, weekDates }) => {
         ))}
       </div>
 
-      {/* 등록자가 있다(면담칸) -> 면담 폼 모달 오픈 */}
-      {/* 등록자가 없다(교수일정칸) -> 교수권한이면 스케줄모달, 아니라면 아무 모달도 띄우지 않음*/}
-      {isModalOpen &&
-        (formData?.name ? (
-          <InterviewModal initData={formData} closeModal={closeModal} />
-        ) : isProfessor ? (
-          <ProfessorScheduleModal initData={formData} closeModal={closeModal} />
-        ) : null)}
+      {isModalOpen && renderModal()}
     </>
   );
 };

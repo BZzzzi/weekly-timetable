@@ -83,11 +83,7 @@ const InterviewModal = ({ initData, closeModal }: Props) => {
       }
 
       // 성공 처리
-      alert(
-        isNew
-          ? "새 면담이 성공적으로 저장되었습니다."
-          : "면담 정보가 성공적으로 업데이트되었습니다.",
-      );
+      alert("저장되었습니다.");
       closeModal();
     } catch (error) {
       console.error("Save error:", error);

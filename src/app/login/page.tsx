@@ -20,6 +20,7 @@ export default function Admin() {
     if (password === adminPassword) {
       LocalStorage.setItem("isLoggedIn", "true");
       setIsLoggedIn(true);
+      window.location.href = "/"; // 메인으로 이동
     } else {
       alert("비밀번호가 일치하지 않습니다. 다시 시도해주세요.");
       setPassword("");
@@ -33,9 +34,7 @@ export default function Admin() {
 
   return (
     <>
-      {isLoggedIn ? (
-        <TimetableContainer />
-      ) : (
+      {!isLoggedIn && (
         <div className="w-full flex justify-center items-center flex-col p-10">
           <h1 className="font-bold text-lg mb-4">관리자 인증</h1>
           <div className="bg-gray-100 p-6 rounded-lg shadow-md w-96">
