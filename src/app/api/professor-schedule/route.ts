@@ -1,10 +1,10 @@
-import { createClient } from "@/utils/supabase/server";
+import { createServerSupabaseClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
   try {
-    const supabase = await createClient();
+    const supabase = await createServerSupabaseClient();
 
     const { error } = await supabase.from("admin").upsert(body).select();
 
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const body = await req.json();
   try {
-    const supabase = await createClient();
+    const supabase = await createServerSupabaseClient();
 
     const { error } = await supabase.from("admin").update(body).eq("id", body.id).select();
 
@@ -40,7 +40,7 @@ export async function PUT(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const body = await req.json();
   try {
-    const supabase = await createClient();
+    const supabase = await createServerSupabaseClient();
 
     const { error } = await supabase.from("admin").delete().eq("id", body.id);
 

@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { createServerSupabaseClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const supabase = await createClient();
+    const supabase = await createServerSupabaseClient();
     // users 테이블 조회
     const { data: usersData, error: usersError } = await supabase
       .from("users")
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const body = await req.json();
   try {
-    const supabase = await createClient();
+    const supabase = await createServerSupabaseClient();
 
     const { error } = await supabase.from("users").upsert(body).select();
 
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const body = await req.json();
   try {
-    const supabase = await createClient();
+    const supabase = await createServerSupabaseClient();
 
     const { error } = await supabase.from("users").update(body).eq("id", body.id).select();
 
@@ -84,7 +84,7 @@ export async function PUT(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const body = await req.json();
   try {
-    const supabase = await createClient();
+    const supabase = await createServerSupabaseClient();
 
     const { error } = await supabase.from("users").delete().eq("id", body.id);
 
